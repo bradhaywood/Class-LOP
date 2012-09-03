@@ -416,6 +416,16 @@ sub add_hook {
     }
 }
 
+sub clone_object {
+    my $self = shift;
+    my $class = $self->{_name};
+    if (! ref($class)) {
+        warn "clone_object() expects a reference\n";
+        return 0;
+    }
+    bless { %{ $class } }, ref $class;
+}
+
 =head1 METHODS
 
 =head2 init
@@ -552,6 +562,19 @@ The types are C<after>, C<before>, and C<around>.
 Returns a list of all the methods within an initialised class. It will filter out classes
 
     my @methods = Class::LOP->init('SomeClass')->list_methods();
+
+=head2 clone_object
+
+Takes an object and spits out a clone of it. This means mangling the original will have no side-effects to the cloned one
+I know L<DateTime> has its own C<clone> method, but still, it's a good example.
+
+    my $dt = DateTime->now;
+    my $dt2 = Class::LOP->init($dt)->clone_object;
+
+    print $dt->add(days => 5)->dmy() . "\n";
+    print $dt2->dmy() . "\n";
+
+Simply changing C<$dt2 = $dt> would mean both results would have the same date when we printed them, but because we cloned the object, they are separate.
 
 =head1 AUTHOR
 

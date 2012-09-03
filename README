@@ -218,6 +218,21 @@ METHODS
 
         my @methods = Class::LOP->init('SomeClass')->list_methods();
 
+  clone_object
+    Takes an object and spits out a clone of it. This means mangling the
+    original will have no side-effects to the cloned one I know DateTime has
+    its own "clone" method, but still, it's a good example.
+
+        my $dt = DateTime->now;
+        my $dt2 = Class::LOP->init($dt)->clone_object;
+
+        print $dt->add(days => 5)->dmy() . "\n";
+        print $dt2->dmy() . "\n";
+
+    Simply changing "$dt2 = $dt" would mean both results would have the same
+    date when we printed them, but because we cloned the object, they are
+    separate.
+
 AUTHOR
     Brad Haywood <brad@perlpowered.com>
 
