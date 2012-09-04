@@ -151,8 +151,8 @@ sub getscope {
 }
 
 sub class_exists {
-    my ($self) = @_;
-    my $class = $self->{_name};
+    my ($self, $class) = @_;
+    $class = $self->{_name} if !$class;
     {
         no strict 'refs';
         return scalar %{ "${class}::" };
@@ -175,8 +175,11 @@ sub list_methods {
 }
 
 sub method_exists {
-    my ($self, $method) = @_;
-    my $class = $self->{_name};
+    my ($self, $class, $method) = @_;
+    if (!$method) {
+        $method = $class;
+        $class = $self->{_name};
+    }
     return $class->can($method);
 }
 
@@ -314,7 +317,8 @@ sub create_constructor {
 
 sub create_class {
     my ($self, $class) = @_;
-    if ($self->class_exists($class)) {
+    my $caller = $self->{_name};
+    if ($self->class_exists($caller)) {
         warn "Can't create class '$class'. Already exists";
         return 0;
     }
@@ -336,7 +340,11 @@ sub create_method {
     if ($self->class_exists($class)) {
         {
             no strict 'refs';
-            no warnings 'redefine';
+            if ($self->method_exists($class, $name)) {
+                warn "Method $name already exists in $class. Did you mean to use override_method()?";
+                return 0;
+            }
+            
             *{"${class}::${name}"} = $code;
         }
     }
@@ -346,6 +354,21 @@ sub create_method {
     }
 
     return $self;
+}
+
+sub override_method {
+    my ($self, $name, $method) = @_;
+    my $class = $self->{_name};
+    {
+        no warnings 'redefine';
+        no strict 'refs';
+        if (! $self->method_exists($class, $name)) {
+            warn "Cant't find '$name' in class $class - override_method()";
+            return 0;
+        }
+        
+        *{"${class}::${name}"} = $method;
+    }
 }
 
 sub last_errors {
@@ -365,9 +388,9 @@ sub add_hook {
         $args{'method'}
     );
 
-    if ($self->class_exists($class)) {
+    if ($self->class_exists($caller)) {
         if ($type && $class && $method && $code) {
-            if (! $self->method_exists($method)) {
+            if (! $self->method_exists($class, $method)) {
                 warn "Can't add hook because class $class does not have method $method";
                 return 0;
             }
@@ -573,6 +596,16 @@ I know L<DateTime> has its own C<clone> method, but still, it's a good example.
 
     print $dt->add(days => 5)->dmy() . "\n";
     print $dt2->dmy() . "\n";
+
+=head2 override_method
+
+Unlike C<create_method>, this method will let you replace the existing one, thereby overriding it.
+
+    sub greet { print "Hello\n"; }
+    
+    Class::LOP->init('ClassName')->override_method('greet', sub { print "Sup\n" });
+
+    greet(); # prints Sup
 
 Simply changing C<$dt2 = $dt> would mean both results would have the same date when we printed them, but because we cloned the object, they are separate.
 
