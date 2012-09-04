@@ -229,6 +229,10 @@ METHODS
         print $dt->add(days => 5)->dmy() . "\n";
         print $dt2->dmy() . "\n";
 
+    Simply changing "$dt2 = $dt" would mean both results would have the same
+    date when we printed them, but because we cloned the object, they are
+    separate.
+
   override_method
     Unlike "create_method", this method will let you replace the existing
     one, thereby overriding it.
@@ -238,10 +242,6 @@ METHODS
         Class::LOP->init('ClassName')->override_method('greet', sub { print "Sup\n" });
 
         greet(); # prints Sup
-
-    Simply changing "$dt2 = $dt" would mean both results would have the same
-    date when we printed them, but because we cloned the object, they are
-    separate.
 
 AUTHOR
     Brad Haywood <brad@perlpowered.com>

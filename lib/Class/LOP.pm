@@ -597,6 +597,8 @@ I know L<DateTime> has its own C<clone> method, but still, it's a good example.
     print $dt->add(days => 5)->dmy() . "\n";
     print $dt2->dmy() . "\n";
 
+Simply changing C<$dt2 = $dt> would mean both results would have the same date when we printed them, but because we cloned the object, they are separate.
+
 =head2 override_method
 
 Unlike C<create_method>, this method will let you replace the existing one, thereby overriding it.
@@ -606,8 +608,6 @@ Unlike C<create_method>, this method will let you replace the existing one, ther
     Class::LOP->init('ClassName')->override_method('greet', sub { print "Sup\n" });
 
     greet(); # prints Sup
-
-Simply changing C<$dt2 = $dt> would mean both results would have the same date when we printed them, but because we cloned the object, they are separate.
 
 =head1 AUTHOR
 
