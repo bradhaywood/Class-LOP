@@ -245,6 +245,29 @@ sub extend_class {
     return $self;
 }
 
+sub call_super {
+    my ($self, @args) = @_;
+    my $class = $self->{_name};
+    my @caller = caller(1);
+    my $fullpath = $caller[3];
+    my $name;
+    if ($fullpath =~ /.+::(.+)$/) {
+        $name = $1;
+    }
+
+    if ($name) {
+        {
+            no strict 'refs';
+            for my $parent (@{"${class}::ISA"}) {
+                if ($parent->can($name)) {
+                    shift @args;
+                    $parent->$name(@args);
+                }
+            }
+        }
+    }
+}
+
 sub have_accessors {
     my ($self, $name) = @_;
     my $class = $self->{_name};
@@ -608,6 +631,18 @@ Unlike C<create_method>, this method will let you replace the existing one, ther
     Class::LOP->init('ClassName')->override_method('greet', sub { print "Sup\n" });
 
     greet(); # prints Sup
+
+=head2 call_super
+
+Will run any methods with the same name from super classes.
+
+    use base 'Some::Class';
+
+    sub some_method {
+        # will call Some::Class::some_method(@_)
+        Class::LOP->init(__PACKAGE__)
+            ->call_super(@_);
+    }
 
 =head1 AUTHOR
 

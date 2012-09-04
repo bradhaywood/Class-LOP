@@ -243,6 +243,17 @@ METHODS
 
         greet(); # prints Sup
 
+  call_super
+    Will run any methods with the same name from super classes.
+
+        use base 'Some::Class';
+
+        sub some_method {
+            # will call Some::Class::some_method(@_)
+            Class::LOP->init(__PACKAGE__)
+                ->call_super(@_);
+        }
+
 AUTHOR
     Brad Haywood <brad@perlpowered.com>
 
