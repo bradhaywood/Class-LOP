@@ -116,6 +116,7 @@ sub new {
 
     return bless {
         _name => $class,
+        _attributes => [],
     },
     __PACKAGE__;
 }
@@ -284,6 +285,7 @@ sub have_accessors {
                         if (@_ > 1) {
                             if ($default) {
                                 if (! exists $_[0]->{"$acc\_$_[0]\_default_used"}) {
+                                    $self->_add_attribute($_[0], $acc, $_[1]);
                                     $_[0]->{$acc} = $_[1];
                                     $_[0]->{"$acc\_$_[0]\_default_used"} = 1;
                                     return $_[1];
@@ -300,6 +302,7 @@ sub have_accessors {
                 else {
                     *{"${class}::${acc}"} = sub {
                         if (@_ > 1) {
+                            $self->_add_attribute($_[0], $acc, $_[1]);
                             $_[0]->{$acc} = $_[1];
                         }
 
@@ -472,6 +475,23 @@ sub clone_object {
     bless { %{ $class } }, ref $class;
 }
 
+sub get_attributes {
+    my $self = shift;
+    my $class = $self->{_name};
+    return $self->{_attributes}->{$class};
+}
+
+sub _add_attribute {
+    my ($self, $class, $attr, $value) = @_;
+    if ($self->{_attributes}->{$class}) {
+        $self->{_attributes}->{$class}->{$attr} = $value; 
+    }
+    else {
+        $self->{_attributes}->{$class} = {
+            $attr => $value,
+        };
+    }
+}
 =head1 METHODS
 
 =head2 init
