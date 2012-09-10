@@ -475,6 +475,27 @@ sub clone_object {
     bless { %{ $class } }, ref $class;
 }
 
+sub load_namespaces {
+    my $self = shift;
+    my $class = $self->{_name};
+    require Module::Finder;
+    my $class_d = $class;
+    $class_d =~ s/::/\//g;
+    $class_d = "$class_d/lib/";
+    my $mf = Module::Finder->new(
+        dirs  => [@INC],
+        paths => {
+            $class => '/',
+        }
+    );
+    my @modnames = $mf->modules;
+    my $usem = "";
+    for(@modnames) {
+        $usem .= "use $_;\n";
+    }
+    eval $usem;
+}
+
 sub get_attributes {
     my $self = shift;
     my $class = $self->{_name};

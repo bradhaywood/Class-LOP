@@ -6,6 +6,7 @@ author   q{Brad Haywood <brad@perlpowered.com>};
 license  'perl';
 
 build_requires 'Test::More';
+requires 'Module::Finder';
 
 auto_install;
 
