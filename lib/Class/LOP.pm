@@ -489,11 +489,10 @@ sub load_namespaces {
         }
     );
     my @modnames = $mf->modules;
-    my $usem = "";
-    for(@modnames) {
-        $usem .= "use $_;\n";
+    for (@modnames) {
+        eval "use $_";
+        $_->import;
     }
-    eval $usem;
 }
 
 sub get_attributes {
@@ -684,6 +683,16 @@ Will run any methods with the same name from super classes.
         Class::LOP->init(__PACKAGE__)
             ->call_super(@_);
     }
+
+=head2 load_namespaces
+
+Will import all modules within the initialised class' namespace. For example, say we 
+have a class called C<MyClass>. And within C<@INC> we have C<MyClass::Test>, C<MyClass::Test::Testing>. 
+Calling this... 
+
+    Clas::LOP->init('MyClass')->load_namespaces();
+
+... would load all of the modules listed, because they are all within the same namespace.
 
 =head1 AUTHOR
 

@@ -254,6 +254,16 @@ METHODS
                 ->call_super(@_);
         }
 
+  load_namespaces
+    Will import all modules within the initialised class' namespace. For
+    example, say we have a class called "MyClass". And within @INC we have
+    "MyClass::Test", "MyClass::Test::Testing". Calling this...
+
+        Clas::LOP->init('MyClass')->load_namespaces();
+
+    ... would load all of the modules listed, because they are all within
+    the same namespace.
+
 AUTHOR
     Brad Haywood <brad@perlpowered.com>
 
