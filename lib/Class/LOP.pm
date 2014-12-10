@@ -273,47 +273,32 @@ sub have_accessors {
     my ($self, $name) = @_;
     my $class = $self->{_name};
     if ($self->class_exists($class)) {
-        {
+        importattrs: {
             no strict 'refs';
-            no warnings 'redefine';
             *{"${class}::${name}"} = sub {
-                my ($acc, %args) = @_;
-                my $default = delete $args{default};
-                my $type    = delete $args{is};
-                if ($type && $type eq 'ro') {
-                    *{"${class}::${acc}"} = sub {
-                        if (@_ > 1) {
-                            if ($default) {
-                                if (! exists $_[0]->{"$acc\_$_[0]\_default_used"}) {
-                                    $self->_add_attribute($_[0], $acc, $_[1]);
-                                    $_[0]->{$acc} = $_[1];
-                                    $_[0]->{"$acc\_$_[0]\_default_used"} = 1;
-                                    return $_[1];
-                                }
-                            }
+                my ($acc, %attrs) = @_;
+                my $ro = 0;
+                my $rq = 0;
+                if (%attrs) {
+                    if ($attrs{is} eq 'ro') { $ro = 1; }
+                    if ($attrs{required}) { $rq = 1; }
+                }
 
-                            warn "Can't modify a read-only accessor (${acc})";
-                            return 0;
+                *{"${class}::${acc}"} = sub {
+                    #if ($attrs{default}) { $_[0]->{$name} = $attrs{default}; }
+                    if ($rq) {
+                        if (not $_[0]->{$acc} and not $_[1]) {
+                            die "You attempted to use a field that can't be left blank: ${acc}";
                         }
+                    }
 
-                        return $_[0]->{$acc};
-                    };
-                }
-                else {
-                    *{"${class}::${acc}"} = sub {
-                        if (@_ > 1) {
-                            $self->_add_attribute($_[0], $acc, $_[1]);
-                            $_[0]->{$acc} = $_[1];
-                        }
-
-                        return $_[0]->{$acc};
-                    };
-                }
-
-                if ($default) {
-                    my $fullpkg = "${class}::${acc}";
-                    $class->$acc($default);
-                }
+                    if (@_ == 2) {
+                        die "Can't modify a readonly accessor: ${acc}"
+                            if $ro;
+                        $_[0]->{$acc} = $_[1];
+                    }
+                    return $_[0]->{$acc};
+                };
             };
         }
 
@@ -333,7 +318,18 @@ sub create_constructor {
             no strict 'refs';
             *{"${caller}::new"} = sub {
                 my ($cself, %cargs) = @_;
-                return bless {}, $cself;
+                
+                my $blessed =  bless {}, $cself;
+                if ($blessed->can('BUILD')) {
+                    $blessed->BUILD(%cargs);
+                }
+
+                if (%cargs) {
+                    $blessed->{$_} = $cargs{$_}
+                        foreach keys %cargs;
+                }
+
+                return $blessed;
             };
         }
         
