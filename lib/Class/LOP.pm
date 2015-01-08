@@ -8,30 +8,13 @@ Class::LOP - The Lightweight Object Protocol
 
 Just like L<Moose> is built from L<Class::MOP>. You can build your own using this module. It is a little different 
 from L<Class::MOP> though, because it doesn't use a meta class, it has less features, but it's a lot faster.
-If you need something lightweight, this may be the tool for you. To actually make sure it's faster I wrote two 
-tests (one in Class::LOP, and the other using Class::MOP) that did the same thing. Just a basic test to list the 
-subclasses of a base class. That's all. Take a look at the differences,
-
-    Class::MOP
-    +---------+
-    real    0m0.081s
-    user    0m0.068s
-    sys     0m0.012s
-
-    Class::LOP
-    +--------+
-    real    0m0.016s
-    user    0m0.008s
-    sys     0m0.004s
-
-Ouch. That's a lot of time wasted for such a menial task. Those tests were just provided by running time in front 
-of each test, so they aren't the best benchmarking can offer, but even still, that's a huge difference.
+If you need something lightweight, this may be the tool for you.
 Using this module you could build an extremely quick OOP framework that could be used from a CLI or as a standard 
-module.
+module. Alternatively, just use it to import extra features into modules. Like everything in Perl, it's all up to you!
 
 =head1 SYNOPSIS
 
-    package Goosey;
+    package Goose;
 
     use Class::LOP;
 
@@ -47,7 +30,7 @@ module.
             ->have_accessors('has');
 
         # import multiple methods into the specified class
-        Class::LOP->init('Goosey')->import_methods($caller, qw/
+        Class::LOP->init('Goose')->import_methods($caller, qw/
             extends
             after
             before
@@ -78,7 +61,7 @@ module.
     # MyClass.pm
     package MyClass;
 
-    use Goosey; # enables warnings/strict
+    use Goose; # enables warnings/strict
     extends 'Some::Module::To::Subclass';
 
     has 'name' => ( is => 'rw', default => 'Foo' );
@@ -599,11 +582,11 @@ will be its "mothers".
 Adds Moose-style accessors to a class. First parameter is the class, second will be the name of the method to 
 create accessors.
 
-    # Goosey.pm
+    # Goose.pm
     $class->have_accessors('acc');
 
     # test.pl
-    use Goosey;
+    use Goose;
 
     acc 'x' => ( is => 'rw', default => 7 );
 
